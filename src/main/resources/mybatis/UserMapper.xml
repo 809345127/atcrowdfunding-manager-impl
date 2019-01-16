@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.atguigu.atcrowdfunding.manager.dao.UserMapper">
+	<resultMap id="BaseResultMap" type="com.atguigu.atcrowdfunding.bean.User">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="loginacct" property="loginacct" jdbcType="VARCHAR" />
+		<result column="userpswd" property="userpswd" jdbcType="CHAR" />
+		<result column="username" property="username" jdbcType="VARCHAR" />
+		<result column="email" property="email" jdbcType="VARCHAR" />
+		<result column="createtime" property="createtime" jdbcType="CHAR" />
+	</resultMap>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from t_user
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.atguigu.atcrowdfunding.bean.User">
+		insert into t_user (id, loginacct, userpswd,
+		username, email, createtime
+		)
+		values (#{id,jdbcType=INTEGER}, #{loginacct,jdbcType=VARCHAR},
+		#{userpswd,jdbcType=CHAR},
+		#{username,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{createtime,jdbcType=CHAR}
+		)
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.atguigu.atcrowdfunding.bean.User">
+		update t_user
+		set loginacct = #{loginacct,jdbcType=VARCHAR},
+		username = #{username,jdbcType=VARCHAR},
+		email = #{email,jdbcType=VARCHAR}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select id, loginacct, userpswd, username, email, createtime
+		from t_user
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<select id="selectAll" resultMap="BaseResultMap">
+		select id, loginacct, userpswd, username, email, createtime
+		from t_user
+	</select>
+	<select id="queryUserByLogin" resultMap="BaseResultMap">
+		select id, loginacct, userpswd, username, email, createtime
+		from t_user where loginacct=#{loginacct} and userpswd=#{userpswd}		
+	</select>
+	
+	
+	<select id="queryPageList" resultMap="BaseResultMap">
+		select id, loginacct, userpswd, username, email, createtime
+		from t_user 
+		<where>
+			<if test="queryText!=null">
+				loginacct like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		order by createtime desc 		
+		limit #{startIndex},#{pagesize} 
+	</select>
+	
+	<select id="count" resultType="int">
+		select count(*)
+		from t_user 
+		<where>
+			<if test="queryText!=null">
+				loginacct like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+
+	<delete id="deleteBatchUserByData" parameterType="list">
+		delete from t_user
+		where id in 
+		<foreach collection="list" open="(" close=")" separator="," item="user">
+			#{user.id}
+		</foreach>
+	</delete>
+	
+
+	<select id="queryPermissionSelf" resultType="Permission" parameterType="int">
+		select distinct t_permission.id,t_permission.* from t_permission,t_role_permission,t_role,t_user_role,t_user 
+			where 
+				t_permission.id = t_role_permission.permissionid 
+				and t_role_permission.roleid = t_role.id 
+				and t_role.id = t_user_role.roleid 
+				and t_user_role.userid = t_user.id 
+				and t_user.id = #{id} order by t_permission.id ASC
+	</select>
+
+</mapper>
